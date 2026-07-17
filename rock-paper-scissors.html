@@ -1,0 +1,357 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Rock Paper Scissors</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@400;500;600;700&family=Baloo+2:wght@500;700;800&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg-1: #FFE8A3;
+    --bg-2: #FFC6C7;
+    --ink: #3A2E39;
+    --rock: #6C7A89;
+    --paper: #F6C453;
+    --scissors: #E8737A;
+    --win: #6FCF97;
+    --lose: #E8737A;
+    --tie: #9B8CE8;
+    --card: #FFFDF7;
+    --shadow: rgba(58, 46, 57, 0.18);
+  }
+
+  * { box-sizing: border-box; }
+
+  body {
+    margin: 0;
+    min-height: 100vh;
+    background:
+      radial-gradient(circle at 15% 20%, var(--bg-2) 0%, transparent 45%),
+      radial-gradient(circle at 85% 80%, var(--bg-2) 0%, transparent 45%),
+      var(--bg-1);
+    font-family: 'Fredoka', sans-serif;
+    color: var(--ink);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 32px 16px 60px;
+    overflow-x: hidden;
+  }
+
+  h1 {
+    font-family: 'Baloo 2', sans-serif;
+    font-weight: 800;
+    font-size: clamp(2rem, 6vw, 3.2rem);
+    margin: 0 0 4px;
+    text-align: center;
+    letter-spacing: -1px;
+  }
+  h1 span { display: inline-block; transform: rotate(-4deg); }
+  h1 .mid { transform: rotate(3deg); color: #E8737A; }
+
+  .subtitle {
+    font-size: 1rem;
+    opacity: 0.75;
+    margin-bottom: 28px;
+    text-align: center;
+  }
+
+  .scoreboard {
+    display: flex;
+    gap: 14px;
+    margin-bottom: 30px;
+  }
+  .score-chip {
+    background: var(--card);
+    border-radius: 16px;
+    padding: 10px 22px;
+    box-shadow: 0 6px 0 var(--shadow);
+    text-align: center;
+    min-width: 90px;
+  }
+  .score-chip .label {
+    font-size: 0.7rem;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    opacity: 0.55;
+    font-weight: 600;
+  }
+  .score-chip .value {
+    font-family: 'Baloo 2', sans-serif;
+    font-size: 1.6rem;
+    font-weight: 700;
+  }
+
+  .arena {
+    width: 100%;
+    max-width: 480px;
+    background: var(--card);
+    border-radius: 28px;
+    box-shadow: 0 10px 0 var(--shadow);
+    padding: 30px 24px;
+    text-align: center;
+    position: relative;
+  }
+
+  .versus-row {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 18px;
+    min-height: 130px;
+    margin-bottom: 8px;
+  }
+
+  .fighter {
+    font-size: 4rem;
+    line-height: 1;
+    width: 100px;
+    height: 100px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: #FFF6E0;
+    border-radius: 24px;
+    box-shadow: inset 0 0 0 3px rgba(58,46,57,0.06);
+  }
+  .fighter.placeholder { font-size: 2.2rem; opacity: 0.35; }
+
+  .vs-label {
+    font-family: 'Baloo 2', sans-serif;
+    font-weight: 700;
+    font-size: 1.1rem;
+    opacity: 0.4;
+  }
+
+  @keyframes shakeLeft {
+    0%, 100% { transform: translateX(0) rotate(0deg); }
+    25% { transform: translateX(-6px) rotate(-6deg); }
+    75% { transform: translateX(6px) rotate(6deg); }
+  }
+  @keyframes shakeRight {
+    0%, 100% { transform: translateX(0) rotate(0deg); }
+    25% { transform: translateX(6px) rotate(6deg); }
+    75% { transform: translateX(-6px) rotate(-6deg); }
+  }
+  @keyframes popIn {
+    0% { transform: scale(0.3) rotate(-15deg); opacity: 0; }
+    60% { transform: scale(1.15) rotate(6deg); opacity: 1; }
+    100% { transform: scale(1) rotate(0deg); opacity: 1; }
+  }
+  .fighter.shaking-l { animation: shakeLeft 0.35s ease-in-out 3; }
+  .fighter.shaking-r { animation: shakeRight 0.35s ease-in-out 3; }
+  .fighter.reveal { animation: popIn 0.4s cubic-bezier(.2,1.3,.4,1); }
+
+  .result-line {
+    font-family: 'Baloo 2', sans-serif;
+    font-weight: 700;
+    font-size: 1.4rem;
+    min-height: 40px;
+    margin: 6px 0 22px;
+    transition: color 0.2s;
+  }
+  .result-line.win { color: var(--win); }
+  .result-line.lose { color: var(--lose); }
+  .result-line.tie { color: var(--tie); }
+
+  .choices {
+    display: flex;
+    justify-content: center;
+    gap: 16px;
+    flex-wrap: wrap;
+  }
+
+  .choice-btn {
+    border: none;
+    cursor: pointer;
+    font-size: 2.3rem;
+    width: 84px;
+    height: 84px;
+    border-radius: 50%;
+    background: #fff;
+    box-shadow: 0 6px 0 rgba(58,46,57,0.15);
+    transition: transform 0.12s ease, box-shadow 0.12s ease;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+  .choice-btn:hover { transform: translateY(-3px); }
+  .choice-btn:active {
+    transform: translateY(4px);
+    box-shadow: 0 2px 0 rgba(58,46,57,0.15);
+  }
+  .choice-btn:disabled { opacity: 0.5; cursor: default; transform: none; }
+
+  .choice-btn.rock { background: #E4E9EE; }
+  .choice-btn.paper { background: #FFF1CE; }
+  .choice-btn.scissors { background: #FBDEE0; }
+
+  .choice-label {
+    display: block;
+    font-size: 0.65rem;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    margin-top: 6px;
+    opacity: 0.6;
+    font-weight: 600;
+  }
+  .choice-wrap { display: flex; flex-direction: column; align-items: center; }
+
+  .reset-btn {
+    margin-top: 26px;
+    background: none;
+    border: 2px dashed rgba(58,46,57,0.25);
+    border-radius: 14px;
+    padding: 8px 18px;
+    font-family: 'Fredoka', sans-serif;
+    font-weight: 500;
+    font-size: 0.85rem;
+    color: var(--ink);
+    opacity: 0.6;
+    cursor: pointer;
+  }
+  .reset-btn:hover { opacity: 1; }
+
+  footer {
+    margin-top: 26px;
+    font-size: 0.8rem;
+    opacity: 0.45;
+    text-align: center;
+  }
+</style>
+</head>
+<body>
+
+  <h1><span>Rock</span> <span class="mid">Paper</span> <span>Scissors</span></h1>
+  <p class="subtitle">Pick your weapon. May the best hand win.</p>
+
+  <div class="scoreboard">
+    <div class="score-chip">
+      <div class="label">You</div>
+      <div class="value" id="playerScore">0</div>
+    </div>
+    <div class="score-chip">
+      <div class="label">Ties</div>
+      <div class="value" id="tieScore">0</div>
+    </div>
+    <div class="score-chip">
+      <div class="label">CPU</div>
+      <div class="value" id="cpuScore">0</div>
+    </div>
+  </div>
+
+  <div class="arena">
+    <div class="versus-row">
+      <div class="fighter placeholder" id="playerFighter">?</div>
+      <div class="vs-label">VS</div>
+      <div class="fighter placeholder" id="cpuFighter">?</div>
+    </div>
+    <div class="result-line" id="resultLine">Make your move!</div>
+    <div class="choices">
+      <div class="choice-wrap">
+        <button class="choice-btn rock" onclick="play('rock')">🪨</button>
+        <span class="choice-label">Rock</span>
+      </div>
+      <div class="choice-wrap">
+        <button class="choice-btn paper" onclick="play('paper')">📄</button>
+        <span class="choice-label">Paper</span>
+      </div>
+      <div class="choice-wrap">
+        <button class="choice-btn scissors" onclick="play('scissors')">✂️</button>
+        <span class="choice-label">Scissors</span>
+      </div>
+    </div>
+    <button class="reset-btn" onclick="resetScores()">Reset scores</button>
+  </div>
+
+  <footer>Rock beats scissors · Paper beats rock · Scissors beats paper</footer>
+
+<script>
+const EMOJI = { rock: '🪨', paper: '📄', scissors: '✂️' };
+const CHOICES = ['rock', 'paper', 'scissors'];
+let scores = { player: 0, cpu: 0, tie: 0 };
+let playing = false;
+
+function play(playerChoice) {
+  if (playing) return;
+  playing = true;
+
+  const buttons = document.querySelectorAll('.choice-btn');
+  buttons.forEach(b => b.disabled = true);
+
+  const playerFighter = document.getElementById('playerFighter');
+  const cpuFighter = document.getElementById('cpuFighter');
+  const resultLine = document.getElementById('resultLine');
+
+  playerFighter.classList.remove('placeholder', 'reveal');
+  cpuFighter.classList.remove('placeholder', 'reveal');
+  resultLine.className = 'result-line';
+  resultLine.textContent = 'Rock, paper, scissors...';
+
+  playerFighter.textContent = EMOJI[playerChoice];
+  cpuFighter.textContent = '🤔';
+
+  playerFighter.classList.add('shaking-l');
+  cpuFighter.classList.add('shaking-r');
+
+  setTimeout(() => {
+    const cpuChoice = CHOICES[Math.floor(Math.random() * 3)];
+
+    playerFighter.classList.remove('shaking-l');
+    cpuFighter.classList.remove('shaking-r');
+    cpuFighter.textContent = EMOJI[cpuChoice];
+    playerFighter.classList.add('reveal');
+    cpuFighter.classList.add('reveal');
+
+    const outcome = decide(playerChoice, cpuChoice);
+
+    if (outcome === 'tie') {
+      scores.tie++;
+      resultLine.textContent = "It's a tie!";
+      resultLine.classList.add('tie');
+    } else if (outcome === 'win') {
+      scores.player++;
+      resultLine.textContent = 'You win! 🎉';
+      resultLine.classList.add('win');
+    } else {
+      scores.cpu++;
+      resultLine.textContent = 'CPU wins this one.';
+      resultLine.classList.add('lose');
+    }
+
+    updateScoreboard();
+    buttons.forEach(b => b.disabled = false);
+    playing = false;
+  }, 1050);
+}
+
+function decide(player, cpu) {
+  if (player === cpu) return 'tie';
+  const beats = { rock: 'scissors', paper: 'rock', scissors: 'paper' };
+  return beats[player] === cpu ? 'win' : 'lose';
+}
+
+function updateScoreboard() {
+  document.getElementById('playerScore').textContent = scores.player;
+  document.getElementById('cpuScore').textContent = scores.cpu;
+  document.getElementById('tieScore').textContent = scores.tie;
+}
+
+function resetScores() {
+  scores = { player: 0, cpu: 0, tie: 0 };
+  updateScoreboard();
+  const playerFighter = document.getElementById('playerFighter');
+  const cpuFighter = document.getElementById('cpuFighter');
+  playerFighter.textContent = '?';
+  cpuFighter.textContent = '?';
+  playerFighter.className = 'fighter placeholder';
+  cpuFighter.className = 'fighter placeholder';
+  const resultLine = document.getElementById('resultLine');
+  resultLine.className = 'result-line';
+  resultLine.textContent = 'Make your move!';
+}
+</script>
+
+</body>
+</html>
